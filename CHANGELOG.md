@@ -1,4 +1,6 @@
-# V1.1.0 — release candidate
+# V1.1.0
+
+发布日期：2026-09-12
 
 ## Changed
 
@@ -20,10 +22,16 @@
 
 ## Validation
 
-- Local PHP 7.4: 12 test groups, 141 assertions; V1 backup copy: 142 assertions.
+- Local PHP 7.4: 13 test groups, 147 assertions; V1 backup copy: 148 assertions.
+- Actual cURL transport integration: DNS pinning, timeout, 2MB limits, redirects and no credential forwarding passed.
 - Chrome / Edge: 12 complete test scenarios passed.
 - PHP process restart and both browsers close/reopen: data, order and uploaded icons persisted.
-- Release tag is gated on Linux, CentOS candidate, formal HTTP and existing-site regression validation.
+- Linux PHP 7.4 / 8.3 and browser/build CI passed.
+- CentOS PHP 7.4.11 / SQLite 3.7.17: 13 groups, 148 assertions passed on a V1 database copy.
+- Candidate and formal HTTP management, uploads, Favicon and refresh persistence passed.
+- FPM/Nginx reload persistence and existing-site regression passed; shared-pool request-level PHP_ADMIN_VALUE overrides were removed after detecting cross-site interference.
+- Original 516-item checklist: 510 passed, 0 failed, 4 browser/physical-device boundaries and 2 not applicable.
+- Final annotated tag is created only after the release CI verifies the original baseline and the CentOS-accepted runtime files.
 
 ## Known validation boundaries
 
