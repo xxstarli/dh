@@ -50,7 +50,8 @@ jobs:
   release-tag:
     # This one-time release is enabled only by the explicitly named release
     # commit, after CentOS acceptance and every CI job have passed.
-    if: github.event_name == 'push' && github.event.head_commit.message == 'release: v1.1.0'
+    if: >-
+      github.event_name == 'push' && github.event.head_commit.message == 'release: v1.1.0'
     needs: [php, browser-and-package]
     runs-on: ubuntu-22.04
     permissions:
