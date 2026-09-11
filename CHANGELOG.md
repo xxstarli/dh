@@ -1,6 +1,6 @@
 # V1.0.1 — compatibility candidate
 
-Release status: pending CentOS 7 production validation. No v1.0.1 tag is created until the deployment acceptance checks pass.
+Status on 2026-09-11: NOT RELEASED. Sharp WASM and Prisma passed on CentOS 7, but Next production startup failed loading native SWC (GLIBC_2.27 not found). Adaptation stopped under the task safety rules; no v1.0.1 tag was created.
 
 ## Fixed
 
@@ -21,7 +21,9 @@ Release status: pending CentOS 7 production validation. No v1.0.1 tag is created
 - Local lint, typecheck and production build passed.
 - Original business tests 6/6 and new image/favicon tests 16/16 passed.
 - Chrome/Edge production E2E 12/12 passed.
-- Modern Linux Node 22 and CentOS runtime results will be recorded in the compatibility report.
+- Ubuntu 24.04 / Node 22.23.2: lint, typecheck, build, 22/22 unit tests and 12/12 Chrome/Edge production E2E passed.
+- CentOS 7: private Node, Prisma generate/runtime/migration and 16/16 image tests passed; Next production runtime failed.
+- Full results: [V1.0.1 compatibility report](docs/07_V1.0.1兼容开发与部署报告.md).
 
 ---
 
