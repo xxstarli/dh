@@ -10,7 +10,7 @@ function walk(directory) {
  }
 }
 walk('app');walk('public');walk('database');
-files.push('config.example.php','scripts/init.php','scripts/router.php','README.md','CHANGELOG.md');
+files.push('config.example.php','scripts/init.php','scripts/router.php','deploy/nginx.example.conf','README.md','CHANGELOG.md');
 if(files.some(file=>/\.(tsx?|env|db)$/.test(file)))throw Error('Unexpected release source');
 fs.mkdirSync('dist',{recursive:true});
 const commit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();

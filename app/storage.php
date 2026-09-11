@@ -39,6 +39,13 @@ function image_format(string $bytes, ?string $declared = null): array
         if (substr($bytes, 0, 3) !== "\xff\xd8\xff" || substr($bytes, -2) !== "\xff\xd9") $bad();
         $offset = 2; $scan = false;
         while ($offset < $size - 2) {
+            // Entropy bytes may follow a stuffed FF00 or restart marker.
+            // Resume at the next marker rather than treating pixels as markers.
+            if ($scan) {
+                $next = strpos($bytes, "\xff", $offset);
+                if ($next === false) $bad();
+                $offset = $next;
+            }
             if (ord($bytes[$offset++]) !== 255) $bad();
             while ($offset < $size && ord($bytes[$offset]) === 255) $offset++;
             if ($offset >= $size) $bad();

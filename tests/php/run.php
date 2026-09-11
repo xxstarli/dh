@@ -22,6 +22,7 @@ if ($copy) {
 require $root . '/app/bootstrap.php';
 require $root . '/app/view.php';
 $images = json_decode(file_get_contents(dirname(__DIR__) . '/images.json'), true);
+$jpegImages = json_decode(file_get_contents(dirname(__DIR__) . '/jpeg-images.json'), true);
 $passed = []; $failures = []; $assertions = 0;
 function check(bool $condition, string $message = 'Assertion failed'): void
 {
@@ -40,6 +41,14 @@ function run_test(string $name, callable $action): void
     global $passed, $failures;
     try { $action(); $passed[] = $name; } catch (Throwable $error) { $failures[] = ['test' => $name, 'error' => $error->getMessage(), 'line' => $error->getLine()]; }
 }
+run_test('JPEG entropy escaping and progressive encoding compatibility', static function () use ($jpegImages): void {
+    foreach ($jpegImages as $data) {
+        $bytes = base64_decode($data);
+        check(strpos($bytes, "\xff\x00") !== false);
+        check(image_format($bytes, 'image/jpeg')['extension'] === 'jpg');
+        rejects(static fn() => image_format(substr($bytes, 0, -2), 'image/jpeg'));
+    }
+});
 run_test('V1 schema, settings, IDs, sorting and old WebP compatibility', static function () use ($images): void {
     $before = query("SELECT * FROM settings WHERE id = 'singleton'")->fetch();
     $oldHash = $before['admin_password_hash'];
