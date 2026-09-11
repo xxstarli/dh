@@ -1,0 +1,22 @@
+import { spawn, spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+const root=path.resolve('storage/e2e');
+fs.mkdirSync(root,{recursive:true});
+const php=process.env.PHP_BIN || 'php';
+const config=path.join(root,'config.php');
+const quote=value=>"'"+value.replaceAll('\\','/').replaceAll("'","\\'")+"'";
+fs.writeFileSync(config,`<?php return ['database'=>${quote(path.join(root,'test.db'))},'icons'=>${quote(path.join(root,'icons'))},'state'=>${quote(path.join(root,'state'))},'origin'=>'http://localhost:3100'];`);
+const env={...process.env,DH_CONFIG:config};
+// This is a publicly documented test-only password, never a production credential.
+const hash=spawnSync(php,['-r',"echo password_hash('Navigation-test-only-2026', PASSWORD_BCRYPT, ['cost'=>12]);"],{encoding:'utf8'});
+if(hash.status!==0)throw Error('Test PHP unavailable: '+hash.stderr);
+const init=spawnSync(php,['scripts/init.php'],{env,input:hash.stdout,encoding:'utf8'});
+if(init.status!==0)throw Error(init.stderr);
+console.log(init.stdout.trim());
+const server=spawn(php,['-S','localhost:3100','-t','public','scripts/router.php'],{env,stdio:['ignore','pipe','pipe']});
+fs.mkdirSync('test-results',{recursive:true});
+const log=fs.createWriteStream('test-results/php-server.log');
+server.stdout.pipe(log);server.stderr.pipe(log);
+process.on('SIGTERM',()=>server.kill());process.on('SIGINT',()=>server.kill());
+server.on('exit',code=>process.exit(code??0));

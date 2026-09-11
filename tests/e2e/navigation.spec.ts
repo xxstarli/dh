@@ -1,14 +1,14 @@
 import { test, expect, type Page, type Locator } from "@playwright/test";
-import { PrismaClient } from "@prisma/client";
+import { database } from "../db";
 import path from "node:path";
 import fs from "node:fs";
-import sharp from "sharp";
-const database = new PrismaClient({
-  datasourceUrl:
-    "file:" + path.resolve("storage/e2e/test.db").replaceAll("\\", "/"),
-});
+import images from "../images.json";
 const password = "Navigation-test-only-2026";
 const origin = "http://localhost:3100";
+async function adminHeaders(page: Page) {
+ const data = await (await page.request.get('/api/admin/session')).json();
+ return {origin, 'X-CSRF-Token': data.csrf_token || ''};
+}
 const browserErrors = new WeakMap<Page, string[]>();
 test.beforeEach(async ({ page }) => {
   const errors: string[] = [];
@@ -18,6 +18,7 @@ test.beforeEach(async ({ page }) => {
     if (m.type() === "error" && !m.text().startsWith("Failed to load resource"))
       errors.push(m.text());
   });
+  fs.rmSync(path.resolve('storage/e2e/state/login-rate.json'),{force:true});
   await database.site.deleteMany();
   await database.category.deleteMany();
   await database.adminSession.deleteMany();
@@ -248,7 +249,7 @@ test("12 complete user journeys: login, CRUD, reorder, refresh, move, delete, se
     (
       await page.request.post("/api/admin/categories", {
         data: { name: "unauthorized" },
-        headers: { origin },
+        headers: await adminHeaders(page),
       })
     ).status(),
   ).toBe(401);
@@ -273,7 +274,7 @@ test("all write endpoints enforce authentication, origin and server validation",
     const result = await request.fetch("/api/admin/" + url, {
       method,
       data: {},
-      headers: { origin },
+      headers: await adminHeaders(page),
     });
     expect(result.status(), url).toBe(401);
   }
@@ -295,14 +296,14 @@ test("all write endpoints enforce authentication, origin and server validation",
       (
         await page.request.post("/api/admin/categories", {
           data: { name },
-          headers: { origin },
+          headers: await adminHeaders(page),
         })
       ).status(),
     ).toBe(400);
   const c = await (
     await page.request.post("/api/admin/categories", {
       data: { name: "valid" },
-      headers: { origin },
+      headers: await adminHeaders(page),
     })
   ).json();
   for (const url of [
@@ -315,7 +316,7 @@ test("all write endpoints enforce authentication, origin and server validation",
       (
         await page.request.post("/api/admin/sites", {
           data: { name: "test", url, category_id: c.id },
-          headers: { origin },
+          headers: await adminHeaders(page),
         })
       ).status(),
     ).toBe(400);
@@ -324,14 +325,14 @@ test("all write endpoints enforce authentication, origin and server validation",
     (
       await page.request.put("/api/admin/categories/reorder", {
         data: { category_ids: [c.id, c.id] },
-        headers: { origin },
+        headers: await adminHeaders(page),
       })
     ).status(),
   ).toBe(400);
   expect(
     (
       await page.request.delete("/api/admin/sites/missing", {
-        headers: { origin },
+        headers: await adminHeaders(page),
       })
     ).status(),
   ).toBe(404);
@@ -343,13 +344,13 @@ test("all write endpoints enforce authentication, origin and server validation",
           url: "https://example.com",
           category_id: "missing",
         },
-        headers: { origin },
+        headers: await adminHeaders(page),
       })
     ).status(),
   ).toBe(404);
   const icon = await page.request.post("/api/admin/favicon", {
     data: { url: "http://169.254.169.254" },
-    headers: { origin },
+    headers: await adminHeaders(page),
   });
   expect(await icon.json()).toMatchObject({ success: false, icon_url: null });
 });
@@ -379,11 +380,7 @@ test("form errors, save failure retention, focus, upload validation and automati
   await expect(page.getByText("模拟保存失败")).toBeVisible();
   await expect(page.getByLabel("网站名称")).toHaveValue("Persisted Form");
   await page.unroute("**/api/admin/sites");
-  const png = await sharp({
-    create: { width: 64, height: 64, channels: 4, background: "#1688ff" },
-  })
-    .png()
-    .toBuffer();
+  const png = Buffer.from(images.png, "base64");
   await page
     .getByLabel("上传网站图标")
     .setInputFiles({ name: "test.png", mimeType: "image/png", buffer: png });
@@ -563,7 +560,7 @@ test("responsive grids, menus, hover, 100 cards and screenshot evidence", async 
   await page.setViewportSize({ width: 1536, height: 1024 });
   await database.site.deleteMany({ where: { name: "示例网站 5" } });
   await page.reload();
-  const evidence = path.resolve("docs/evidence");
+  const evidence = path.resolve("backups/v1.1.0/evidence");
   fs.mkdirSync(evidence, { recursive: true });
   await expect(
     page.getByRole("button", { name: "管理", exact: true }),

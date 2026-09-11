@@ -1,0 +1,49 @@
+name: PHP runtime validation
+on:
+  push:
+    branches: [refactor/centos7-v1.1.0]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  php:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        php: ['7.4', '8.3']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: pdo_sqlite, sqlite3, curl, fileinfo, mbstring, openssl
+          coverage: none
+      - run: php scripts/check.php
+      - run: php tests/php/run.php
+  browser-and-package:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          extensions: pdo_sqlite, sqlite3, curl, fileinfo, mbstring, openssl
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --global pnpm@11.19.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chrome msedge
+      - run: pnpm lint && pnpm typecheck && pnpm test && pnpm test:e2e && pnpm test:restart && pnpm build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: navigation-v1.1.0
+          path: dist/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: validation-evidence
+          path: |
+            test-results/
+            backups/v1.1.0/evidence/

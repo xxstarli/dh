@@ -17,7 +17,7 @@ export default defineConfig({
     { name: "edge", use: { channel: "msedge" } },
   ],
   webServer: {
-    command: "node node_modules/tsx/dist/cli.mjs tests/server.ts",
+    command: "node tests/server.mjs",
     url: "http://localhost:3100/api/navigation",
     reuseExistingServer: false,
     timeout: 120000,

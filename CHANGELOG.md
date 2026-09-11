@@ -1,3 +1,35 @@
+# V1.1.0 — release candidate
+
+## Changed
+
+- Rebuilt production runtime for legacy CentOS 7 compatibility using PHP 7.4+ and SQLite.
+- Replaced Next.js/Node/React/Prisma production runtime with PHP, HTML, CSS and Vanilla JavaScript.
+- Replaced Sharp with signature, MIME and image-structure validation and original-byte storage.
+- Added CSRF tokens to existing server-side Session and Origin protection.
+
+## Preserved
+
+- V1 UI, user workflows, search, category and site management, drag sorting.
+- Favicon fallback and custom icon workflows, existing WebP icon URLs.
+- Existing SQLite business tables, string IDs, Settings and bcrypt password hashes.
+
+## Database
+
+- No business schema migration required. Existing databases are validated without reseeding.
+- New databases are initialized without sample data and require a supplied bcrypt hash.
+
+## Validation
+
+- Local PHP 7.4: 12 test groups, 141 assertions; V1 backup copy: 142 assertions.
+- Chrome / Edge: 12 complete test scenarios passed.
+- PHP process restart and both browsers close/reopen: data, order and uploaded icons persisted.
+- Release tag is gated on Linux, CentOS candidate, formal HTTP and existing-site regression validation.
+
+## Known validation boundaries
+
+- Safari and physical mobile devices still require real-device verification.
+- HTTP traffic is unencrypted; do not transmit management credentials over untrusted networks.
+
 # V1.0.0
 
 发布日期：2026-09-11
