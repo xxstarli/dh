@@ -11,7 +11,7 @@ jobs:
     timeout-minutes: 25
     env:
       NEXT_TELEMETRY_DISABLED: "1"
-      PRISMA_CLI_BINARY_TARGETS: rhel-openssl-1.0.x
+      PRISMA_CLI_BINARY_TARGETS: debian-openssl-3.0.x,rhel-openssl-1.0.x
       DATABASE_URL: file:../storage/ci-build.db
       APP_ORIGIN: http://localhost:3100
     steps:
