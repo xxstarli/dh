@@ -2,6 +2,7 @@ import { spawnSync, spawn } from "node:child_process";
 import path from "node:path";
 import fs from "node:fs";
 import bcrypt from "bcryptjs";
+const production = process.env.E2E_PRODUCTION === "1";
 const root = path.resolve("storage/e2e");
 fs.mkdirSync(root, { recursive: true });
 const env = {
@@ -10,7 +11,9 @@ const env = {
   UPLOAD_DIR: path.join(root, "icons"),
   APP_ORIGIN: "http://localhost:3100",
   ADMIN_PASSWORD_HASH: bcrypt.hashSync("Navigation-test-only-2026", 12),
-  NEXT_BUILD_DIR: ".next-e2e",
+  NEXT_BUILD_DIR: production
+    ? process.env.NEXT_BUILD_DIR || ".next"
+    : ".next-e2e",
   NEXT_TELEMETRY_DISABLED: "1",
 };
 for (const args of [
@@ -24,7 +27,7 @@ const server = spawn(
   process.execPath,
   [
     "node_modules/next/dist/bin/next",
-    "dev",
+    production ? "start" : "dev",
     "--port",
     "3100",
     "--hostname",

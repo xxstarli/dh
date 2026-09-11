@@ -10,6 +10,7 @@ export default defineConfig([
     ".next-e2e/**",
     "next-env.d.ts",
     "storage/**",
+    "backups/**",
     "test-results/**",
   ]),
 ]);

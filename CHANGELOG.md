@@ -1,3 +1,30 @@
+# V1.0.1 — compatibility candidate
+
+Release status: pending CentOS 7 production validation. No v1.0.1 tag is created until the deployment acceptance checks pass.
+
+## Fixed
+
+- Replaced platform-specific Sharp/libvips binaries with the official Sharp 0.35.4 WebAssembly backend using locked pnpm dependency configuration.
+- Preserved PNG/JPEG/WebP decoding, MIME validation, 2MB and pixel limits, resizing, WebP output, SHA-256 names, existing icon URLs, and favicon workflows.
+- Added the Prisma rhel-openssl-1.0.x binary target for CentOS 7 without changing any database models or migrations.
+
+## Compatibility
+
+- No business logic changes.
+- No UI changes.
+- No database schema changes (only Prisma generator binary targets).
+- Requires the pinned pnpm configuration; do not replace it with npm install or omit the required WASM package.
+- CentOS runtime verification is required separately from a successful modern Linux build.
+
+## Validation
+
+- Local lint, typecheck and production build passed.
+- Original business tests 6/6 and new image/favicon tests 16/16 passed.
+- Chrome/Edge production E2E 12/12 passed.
+- Modern Linux Node 22 and CentOS runtime results will be recorded in the compatibility report.
+
+---
+
 # V1.0.0
 
 发布日期：2026-09-11

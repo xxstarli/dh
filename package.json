@@ -1,6 +1,6 @@
 {
   "name": "personal-navigation-v1",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
@@ -29,7 +29,7 @@
     "next": "^16.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "sharp": "^0.35.4",
+    "sharp": "0.35.4",
     "zod": "^4.0.0"
   },
   "devDependencies": {
@@ -45,5 +45,6 @@
     "tailwindcss": "^4.1.0",
     "tsx": "^4.20.0",
     "typescript": "^5.9.0"
-  }
+  },
+  "packageManager": "pnpm@11.19.0"
 }

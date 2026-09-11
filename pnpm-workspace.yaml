@@ -2,9 +2,20 @@ allowBuilds:
   '@prisma/client': true
   '@prisma/engines': true
   prisma: true
-  sharp: true
+  sharp: false
   esbuild: true
   unrs-resolver: true
 
+# Use the same portable image backend in development, CI and production.
+# WASM is a required dependency of sharp; only its optional native variants are skipped.
+ignoredOptionalDependencies:
+  - '@img/sharp-*'
+
+packageExtensions:
+  'sharp@0.35.4':
+    dependencies:
+      '@img/sharp-wasm32': '0.35.4'
+
 overrides:
   deepmerge-ts: ^8.0.0
+  sharp: 0.35.4

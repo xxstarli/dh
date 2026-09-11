@@ -1,0 +1,73 @@
+name: CentOS 7 compatibility candidate
+on:
+  push:
+    branches: [compat/centos7-v1.0.1]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  linux-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      PRISMA_CLI_BINARY_TARGETS: rhel-openssl-1.0.x
+      DATABASE_URL: file:../storage/ci-build.db
+      APP_ORIGIN: http://localhost:3100
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.23.2"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: "11.19.0"
+      - name: Verify frozen baseline
+        run: |
+          test "$(git rev-parse 'v1.0.0^{commit}')" = 0a90bb355ca3938c3e2da1d1f4d33d1fa16f76aa
+          git merge-base --is-ancestor v1.0.0 HEAD
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:generate
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chrome msedge
+      - name: Production browser regression
+        run: pnpm test:e2e
+        env:
+          E2E_PRODUCTION: "1"
+      - name: Build candidate archives (not a release tag)
+        run: |
+          mkdir -p dist/source dist/artifacts
+          git archive HEAD | tar -x -C dist/source
+          cp -a .next dist/source/.next
+          rm -rf dist/source/.next/cache
+          node -e 'require("fs").writeFileSync("dist/source/BUILD_VERSION.json", JSON.stringify({version:require("./package.json").version,commit:process.env.GITHUB_SHA,node:process.version,platform:process.platform,arch:process.arch},null,2))'
+          tar -czf dist/artifacts/source-build.tgz -C dist/source .
+          tar -czf dist/artifacts/runtime-dependencies.tgz node_modules
+          cd dist/artifacts
+          sha256sum source-build.tgz runtime-dependencies.tgz > SHA256SUMS
+      - name: Download and verify private CentOS Node distribution
+        run: |
+          cd dist/artifacts
+          base=https://unofficial-builds.nodejs.org/download/release/v22.23.2
+          curl --fail --location --retry 2 --max-time 180 "$base/SHASUMS256.txt" -o NODE_SHASUMS256.txt
+          curl --fail --location --retry 2 --max-time 180 "$base/node-v22.23.2-linux-x64-glibc-217.tar.xz" -o node-v22.23.2-linux-x64-glibc-217.tar.xz
+          grep ' node-v22.23.2-linux-x64-glibc-217.tar.xz$' NODE_SHASUMS256.txt | sha256sum -c -
+      - uses: actions/upload-artifact@v4
+        with:
+          name: centos7-candidate-${{ github.sha }}
+          path: dist/artifacts/
+          retention-days: 7
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: compatibility-test-evidence-${{ github.sha }}
+          path: |
+            test-results/
+            docs/evidence/
+          retention-days: 7
