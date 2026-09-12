@@ -1,4 +1,6 @@
-# 个人导航网站 V1.1.0
+# 个人导航网站 V1.2.0
+
+V1.2.0 为哆啦A梦主题视觉升级：本地 PNG、天空蓝背景、卡片与管理弹窗配色。保留 V1.1.0 全部业务、安全规则与 5→4→3→2 响应式布局，无数据库迁移。主题验收见 design-qa.md 与 docs/V1.2.0发布验收.md。
 
 V1.1.0 将 V1.0.0 的运行架构替换为 PHP + SQLite，保留首页、搜索、同页管理、分类/网站 CRUD、拖拽排序、图标与五列响应式布局。V1.0.0 源码和冻结文档保存在原 Tag；实验分支保留但不是本版本基础。
 
@@ -65,7 +67,7 @@ pnpm test:restart
 pnpm build
 ```
 
-lint 包含 PHP 语法及 JavaScript 检查；typecheck 检查 TypeScript 浏览器测试和 SQLite 测试适配器；生产 JavaScript 由 lint 和浏览器验证。build 是白名单打包，无前端编译，输出 dist/navigation-v1.1.0.tar.gz、SHA256SUMS 和逐文件 manifest。PHP_BIN 可设置 PHP 可执行文件路径。V1_DATABASE_COPY 可指向私有 V1 备份，仅 PHP 测试复制使用，禁止上传 CI。
+lint 包含 PHP 语法及 JavaScript 检查；typecheck 检查 TypeScript 浏览器测试和 SQLite 测试适配器；生产 JavaScript 由 lint 和浏览器验证。build 是白名单打包，无前端编译，输出 dist/navigation-v1.2.0.tar.gz、SHA256SUMS 和逐文件 manifest。PHP_BIN 可设置 PHP 可执行文件路径。V1_DATABASE_COPY 可指向私有 V1 备份，仅 PHP 测试复制使用，禁止上传 CI。
 
 ## 部署
 
@@ -80,4 +82,4 @@ lint 包含 PHP 语法及 JavaScript 检查；typecheck 检查 TypeScript 浏览
 
 PHP-FPM 由既有服务守护，不启动 Node 服务，不开放应用端口。仅为本站配置 HTTP :80。当前部署目标采用 HTTP，不启用 TLS。HTTP 流量未加密，不适合在不可信网络中传输管理密码或管理 Session。
 
-历史 docs/01–07 和 design-qa.md 描述 V1.0.0 基准；V1.1.0 的架构替代和新验收单独记录，不改已确认产品需求。
+历史 docs/01–07 描述 V1.0.0 基准；design-qa.md 记录当前主题验收；V1.1.0 的架构替代和新验收单独记录，不改已确认产品需求。

@@ -1,7 +1,7 @@
 name: PHP runtime validation
 on:
   push:
-    branches: [refactor/centos7-v1.1.0]
+    branches: [refactor/centos7-v1.1.0, codex/release-v1.2.0]
   workflow_dispatch:
 permissions:
   contents: read
@@ -38,7 +38,7 @@ jobs:
       - run: pnpm lint && pnpm typecheck && pnpm test && pnpm test:e2e && pnpm test:restart && pnpm build
       - uses: actions/upload-artifact@v4
         with:
-          name: navigation-v1.1.0
+          name: navigation-v1.2.0
           path: dist/
       - uses: actions/upload-artifact@v4
         if: always()
@@ -46,7 +46,7 @@ jobs:
           name: validation-evidence
           path: |
             test-results/
-            backups/v1.1.0/evidence/
+            docs/evidence/doraemon-png/
   release-tag:
     # This one-time release is enabled only by the explicitly named release
     # commit, after CentOS acceptance and every CI job have passed.

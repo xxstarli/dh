@@ -69,6 +69,10 @@ async function edit(page: Page, name: string) {
     .getByRole("button", { name: name + "更多操作", exact: true })
     .click();
   await page.getByRole("menuitem", { name: "编辑", exact: true }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  const evidence = path.resolve('docs/evidence/doraemon-png');
+  fs.mkdirSync(evidence, { recursive: true });
+  await page.screenshot({ animations: 'disabled', path: path.join(evidence, test.info().project.name + (test.info().title.startsWith('12 complete user journeys') ? '-edit-dialog.png' : '-edit-recovery-dialog.png')) });
 }
 async function drag(page: Page, source: Locator, target: Locator) {
   await expect(source).toBeEnabled();
@@ -559,12 +563,33 @@ test("responsive grids, menus, hover, 100 cards and screenshot evidence", async 
   }
   await page.setViewportSize({ width: 1536, height: 1024 });
   await database.site.deleteMany({ where: { name: "示例网站 5" } });
-  await page.reload();
-  const evidence = path.resolve("backups/v1.1.0/evidence");
+  const homeResponse = await page.reload();
+  expect(await homeResponse!.text()).toContain('<main class="page-content">');
+  await expect(page.locator("main .site-card")).toHaveCount(30);
+  const evidence = path.resolve("docs/evidence/doraemon-png");
   fs.mkdirSync(evidence, { recursive: true });
   await expect(
     page.getByRole("button", { name: "管理", exact: true }),
   ).toBeEnabled();
+  // Theme assets must load through the real PHP router, and remain non-interactive.
+  const themeAssets = page.locator('.theme-scenery img, .header-character');
+  await expect.poll(() => themeAssets.evaluateAll((images) => images.every((image) =>
+    image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0,
+  ))).toBe(true);
+  expect(await themeAssets.evaluateAll((images) => images.every((image) =>
+    getComputedStyle(image).pointerEvents === 'none',
+  ))).toBe(true);
+  await expect(page.locator('.theme-scenery')).toHaveCSS('position', 'absolute');
+  await expect(page.locator('.header-character')).toHaveCSS('position', 'absolute');
+  await expect.poll(() => page.locator('.brand-icon img').evaluate((image) =>
+    image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0,
+  )).toBe(true);
+  const character = await page.locator('.header-character').boundingBox();
+  for (const selector of ['.search-box', '.manage-button']) {
+    const control = await page.locator(selector).boundingBox();
+    expect(character!.x + character!.width <= control!.x || control!.x + control!.width <= character!.x).toBe(true);
+  }
+
   await page.screenshot({
     animations: "disabled",
     path: path.join(evidence, info.project.name + "-home.png"),

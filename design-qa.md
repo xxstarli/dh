@@ -1,32 +1,32 @@
-# 视觉与交互验收
+# Doraemon supplied-PNG visual QA
 
 final result: passed
 
-参考：`docs/ui/首页UI_V1.png`、`docs/ui/导航网站_添加编辑网站弹窗UI_V1.png`、`docs/ui/导航网站_管理模式UI_V1.png`。
+Source: user-supplied seven PNGs (originals archived under backups/v1.2.0/unused-source-assets/), plus layout reference docs/ui/首页UI_哆啦A梦主题_V1.png (1536×1024).
+Implementation: docs/evidence/doraemon-png/chrome-home.png and edge-home.png, 1536×1024 CSS px, DPR 1. User explicitly replaces the earlier generated character/SVG scenery with these supplied PNGs; exact original character placement is not a requirement.
+Full comparison: docs/evidence/doraemon-png/compare-home.png, 3072×1064, two 1:1 views plus caption. E2E fixture has six categories/30 cards with original fallback icons; development data remains one category/one site.
 
-实现证据：`docs/evidence/chrome-home.png`、`chrome-dialog.png`、`chrome-admin.png`；同名 Edge 截图；`chrome-mobile.png` 与 `chrome-mobile-dialog.png`。
+## Iteration history
 
-## 对照方法
+- First PNG integration: character artwork slightly clipped at top; top clouds too low/dense. Evidence: iteration-1-home.png.
+- Fixed with 130px character image box positioned so visible content is complete; cloud moved upward to -250px with .62 opacity. Screenshot recaptured and final full E2E rerun.
+- Category accent now takes its own flex space, preserving truncation for long custom names.
 
-原图 1536×1024；PC 浏览器 viewport 1536×1024，deviceScaleFactor=1。首页 6 个分类、每类 5 个网站；管理模式因测试数据包含 6 个分类而产生自然页面滚动。管理图对比首屏和前四个分类，不将示例内容数量不同计为布局错误。并排图 `compare-home.png`、`compare-admin.png`、`compare-dialog.png` 将两侧统一缩放为 768×512。原始截图保留用于检查文字和控件细节。手机 390×844，另实测 360px 宽。
+## Final visual assessment
 
-## 视觉检查
+- Bright pale sky gradient, local transparent cloud depth, restrained pink/yellow accents. White cards with 14px corners, light blue edge/shadow, original text hierarchy and 2px hover motion.
+- Independent smiling brand Logo and supplied waving character; no theme art in dialogs. Main title/subtitle unchanged. Search/management controls do not intersect the character horizontally.
+- Scenery has pointer-events:none, is out of document flow and below content. Character/scenery hidden or reduced responsively. Original five/four/three/two grid, all links displayed, left aligned partial rows.
+- Normal, management, login, add/edit website, mobile management and mobile dialog screenshots inspected. Adding/editing categories uses unchanged shared native dialog styling and passes existing E2E.
+- Full/region inspection confirms consistent spacing, text readability, intact image aspect ratios and preserved alpha. Original system font stack retained; test data names/icons differ from reference intentionally.
+- Final Chrome/Edge full suite 12/12; PHP 147 assertions and persistence restart pass. One intermediate Edge new-tab visibility failure did not reproduce in isolated traced rerun or final full run; cause unconfirmed, documented in full report. No production business changes made to address it.
 
-- 字体层级：品牌 21px、分类 19px、网站名 15.5px、说明 14px；单行省略。Windows 使用系统中文字体回退。
-- 布局：80px 顶栏，居中约 1440px 内容区，固定五等分 Grid；普通卡片 84px，管理卡片 80px。不足一行保持左对齐、宽度不变。
-- 样式：浅灰蓝背景、白卡片、浅边框、轻阴影、蓝色主按钮。卡片 12px 圆角，弹窗 21px。
-- 弹窗：744px 大屏宽度，字段顺序与设计一致；104px 图标预览、底部右侧取消/保存；小屏限制高度并可滚动。
-- 管理模式：原首页增加提示条、拖拽手柄、菜单、添加入口；页面不跳转。
-- 图像：测试截图使用真实默认图标状态，未把截图中第三方 Logo 硬编码入生产页面；自定义图标及自动获取成功路径另有功能验证。默认站点 Logo 与分类装饰使用统一图标库。
-- 文案：业务操作遵循 PRD。普通模式不显示参考图中存在的“添加分类”；可选主题按钮未实现。
-- 响应式：1536 / 1200 / 900 / 390 / 360px 实测 5 / 4 / 3 / 2 / 2 列，无水平溢出。菜单自动避让屏幕边缘。
+No remaining P0/P1/P2 visual issues within the requested skin-only scope. P3/boundaries: source PNGs total about 4.8 MiB, kept lossless as requested; mobile real hardware/Safari/remote production not tested. Unused generated assets have been archived outside the release. Local preview http://localhost:3000. Full report: docs/哆啦A梦主题_验收报告.md.
 
-## 修正记录
+## V1.2.0 final acceptance — 2026-09-13
 
-1. 管理模式左右留白偏大：调整为约 52px，网格横向间距 12px；修正后截图通过。
-2. 大屏网站弹窗位置偏高：在足够高的大屏中下移 18px；小屏仍居中并限制高度。
-3. 初次加载管理入口早于交互初始化：增加可用状态守卫。
-4. 弹窗关闭后焦点不确定：恢复触发元素或管理按钮焦点，键盘测试通过。
-5. 截图捕捉到淡入过程：截图禁用动画，保留实际产品轻量动效。
+Final full run after development-only HTML output buffering: Chrome 6/6, Edge 6/6, 46.5 seconds. lint, typecheck, PHP 13 groups/147 assertions, transport security, restart persistence and build passed. Original HTML main/card completeness is now asserted in both browser responsive scenarios. Production PHP business files and JavaScript remain byte-identical to v1.1.0.
 
-没有剩余 P0/P1/P2 视觉或交互问题。截图示例内容、第三方 Logo、可选主题按钮与参考图存在上述有意差异；页面布局与组件尺寸保持设计方向。
+One earlier Edge run received malformed HTML missing the closing header/opening main segment; the captured response proves this preceded client rendering. Four isolated Edge repeats and 240 browser loads did not reproduce it. Development router output buffering limits small writes; the exact intermittent transport cause remains unconfirmed. Evidence is retained in backups/v1.2.0/failed-edge-response/. No errors were suppressed or expectations weakened.
+
+Fresh Chrome/Edge read-only development checks: seven PNGs loaded, zero console/page errors, zero failed/404 resources, 1536/1200/900/390/360 widths yield 5/4/3/2/2 columns without overflow. Normal/admin/login/add/edit/mobile screenshots inspected. Production backup/deployment/Smoke Test remain pending authenticated SSH access; this is not a claim of completed production acceptance. See docs/V1.2.0发布验收.md.
